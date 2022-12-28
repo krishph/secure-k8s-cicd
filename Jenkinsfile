@@ -1,6 +1,5 @@
 node {
     stage('SCM-Checkout') { // for display purposes
-       steps {
            checkout([$class: 'GitSCM',
                  branches: [[name: 'main']],
                  doGenerateSubmoduleConfigurations: false,
@@ -8,21 +7,20 @@ node {
                  userRemoteConfigs: [[credentialsId: 'GitHubID', url: 'https://github.com/krishph/terraform.git']]
 
            ])
-       }
         // Clone the configurations repository
         // cleanWs()
         // git 'https://github.com/LinkedInLearning/advanced-terraform-2823489.git'   
     }
     stage('Download') {
         // Download Terraform
-        sh label: '', script: 'curl https://releases.hashicorp.com/terraform/0.12.29/terraform_0.12.29_linux_amd64.zip \
-            --output terraform_0.12.29_darwin_amd64.zip \
-             && unzip terraform_0.12.29_darwin_amd64.zip'
+        sh label: '', script: 'curl https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_linux_amd64.zip \
+            --output terraform_1.3.6_linux_amd64.zip \
+             && unzip terraform_1.3.6_linux_amd64.zip'
     }
     stage('Backend-Init') {
         // Initialize the Terraform configuration
-        dir('/backend') {
-            sh script: '../../terraform init -input=false'
+        dir('backend') {
+            sh script: '../terraform init -input=false'
         }
         
     }
@@ -30,7 +28,7 @@ node {
         // Create Terraform plan for backend resources
         withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
                         string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-            dir('/backend') {
+            dir('backend') {
                 sh script: '../terraform plan \
                         -out backend.tfplan \
                         -var="aws_access_key=$aws_access_key" \
@@ -41,8 +39,8 @@ node {
     stage('Backend-Apply') {
         withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
                         string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                            dir('remotestate') {
-                                sh script: '../../terraform apply backend.tfplan'
+                            dir('backend') {
+                                sh script: '../terraform apply backend.tfplan'
                             }
         }
     }
@@ -51,9 +49,9 @@ node {
                         string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
                             dir('remotestate') {
                                 sh script: '../terraform init \
-                                            -backend-config="bucket=red30-tfstate" \
+                                            -backend-config="bucket=ikrish-tf-s3-tfstate" \
                                             -backend-config="key=red30/ecommerceapp/app.state" \
-                                            -backend-config="region=us-east-2" \
+                                            -backend-config="region=us-east-1" \
                                             -backend-config="dynamodb_table=red30-tfstatelock" \
                                             -backend-config="access_key=$aws_access_key" \
                                             -backend-config="secret_key=$aws_secret_key"'
