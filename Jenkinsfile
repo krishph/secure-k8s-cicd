@@ -14,8 +14,6 @@ pipeline {
                 echo "Operation is ${params.operation}"
             }
         }
-    }
-    stages {
         stage('SCM-Checkout') { // for display purposes
             steps {
                 checkout([$class: 'GitSCM',
