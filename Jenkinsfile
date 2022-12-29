@@ -9,6 +9,13 @@ pipeline {
         booleanParam(name: 'S3', defaultValue: false, description: 'Toggle this value')
     }
     stages {
+        stage {
+            steps {
+                echo "Operation is ${params.operation}"
+            }
+        }
+    }
+    stages {
         stage('SCM-Checkout') { // for display purposes
             steps {
                 checkout([$class: 'GitSCM',
