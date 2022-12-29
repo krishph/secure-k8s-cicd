@@ -9,7 +9,7 @@ pipeline {
         booleanParam(name: 'S3', defaultValue: false, description: 'Toggle this value')
     }
     stages {
-        stage {
+        stage('Print Params') {
             steps {
                 echo "Operation is ${params.operation}"
             }
