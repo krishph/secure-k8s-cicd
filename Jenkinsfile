@@ -45,7 +45,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
                             string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    if params.operation == 'apply' {
+                    if (params.operation == 'apply') {
                        dir('backend') {
                            sh script: '../terraform init -input=false'
                            sh script: '../terraform plan \
@@ -55,7 +55,7 @@ pipeline {
                            sh script: '../terraform apply backend.tfplan'
                        }
                     } 
-                    if params.operation == 'destroy' {
+                    if (params.operation == 'destroy') {
                        dir('backend') {
                         sh script: '../terraform destroy \
                                 -auto-approve \
