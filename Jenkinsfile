@@ -59,7 +59,6 @@ pipeline {
                         } 
                         if (params.operation == 'destroy') {
                             dir('backend') {
-                                        sh script: '../terraform init -input=false'
                                         sh script: '../terraform destroy \
                                                 -auto-approve \
                                                 -var="aws_access_key=$aws_access_key" \
@@ -90,7 +89,7 @@ pipeline {
                                                     -backend-config="dynamodb_table=red30-tfstatelock" \
                                                     -backend-config="access_key=$aws_access_key" \
                                                     -backend-config="secret_key=$aws_secret_key"'
-                                        ssh script: '../terraform plan \
+                                        sh script: '../terraform plan \
                                                     -out vpc.tfplan \
                                                     -var="aws_access_key=$aws_access_key" \
                                                     -var="aws_secret_key=$aws_secret_key"'
