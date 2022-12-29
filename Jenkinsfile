@@ -59,6 +59,7 @@ pipeline {
                         } 
                         if (params.operation == 'destroy') {
                             dir('backend') {
+                                        sh script: '../terraform init -input=false'
                                         sh script: '../terraform destroy \
                                                 -auto-approve \
                                                 -var="aws_access_key=$aws_access_key" \
