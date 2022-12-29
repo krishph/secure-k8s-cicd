@@ -1,13 +1,5 @@
 pipeline {
     agent any
-    parameters {
-        choice (name: 'operation', choices: ['init', 'plan', 'apply', 'destroy'])
-        booleanParm(defaultValue: false, name: 'ALL', description: 'Process all')
-        booleanParm(defaultValue: false, name: 'Base', description: 'BaseConfig S3 and DynamoDB')
-        booleanParm(defaultValue: false, name: 'VPC', description: 'VPC Set up in us-east-1')
-        booleanParm(defaultValue: false, name: 'EC2', description: 'EC2 instance set up')
-        booleanParm(defaultValue: false, name: 'S3', description: 'S3 Bucket')
-    }
 }
 
 stages {
