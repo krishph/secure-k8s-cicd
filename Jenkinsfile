@@ -62,6 +62,7 @@ pipeline {
                         } 
                         if (params.operation == 'destroy') {
                             dir('backend') {
+                                        sh script: '../terraform init -input=false'
                                         sh script: 'aws s3 cp s3://ikrish-tf-s3-tfstate/base/terraform.tfstate ./terraform.tfstate'
                                         sh script: '../terraform destroy \
                                                 -auto-approve \
