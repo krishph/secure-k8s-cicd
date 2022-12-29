@@ -12,7 +12,7 @@ pipeline {
         stage('Print Params') {
             steps {
                 echo "Operation is ${params.operation}"
-                echo "All button is ${params.ALL}"
+                echo "All button is ${params.All}"
                 echo "Backend button is ${params.Backend}"
                 echo "VPC button is ${params.VPC}"
                 echo "EC2 button is ${params.EC2}"
@@ -39,7 +39,7 @@ pipeline {
         stage('Backend-Init') {
             when {
                 expression {
-                    return params.ALL || params.backend
+                    return params.All || params.Backend
                 }
             }
             steps {
