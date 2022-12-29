@@ -55,6 +55,7 @@ pipeline {
                                                 -var="aws_access_key=$aws_access_key" \
                                                 -var="aws_secret_key=$aws_secret_key"'
                                         sh script: '../terraform apply backend.tfplan'
+                                        sh script: 'aws s3 cp ../terraform.tfstate s3://ikrish-tf-s3-tfstate/base/terraform.tfstate'
                                 }
                         } 
                         if (params.operation == 'destroy') {
