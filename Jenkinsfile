@@ -1,9 +1,9 @@
 pipeline {
     agent any
     parameters {
-        choice(name: 'operation', choices: ['init', 'plan', 'apply', 'destroy'], description: 'Pick something')
+        choice(name: 'operation', choices: ['apply', 'destroy'], description: 'Pick something')
         booleanParam(name: 'All', defaultValue: false, description: 'Toggle this value')
-        booleanParam(name: 'Base', defaultValue: false, description: 'Toggle this value')        
+        booleanParam(name: 'Backend', defaultValue: false, description: 'Toggle this value')        
         booleanParam(name: 'VPC', defaultValue: false, description: 'Toggle this value')
         booleanParam(name: 'EC2', defaultValue: false, description: 'Toggle this value')
         booleanParam(name: 'S3', defaultValue: false, description: 'Toggle this value')
@@ -12,6 +12,10 @@ pipeline {
         stage('Print Params') {
             steps {
                 echo "Operation is ${params.operation}"
+                echo "All button is ${params.ALL}"
+                echo "Backend button is ${params.Backend}"
+                echo "VPC button is ${params.VPC}"
+                echo "EC2 button is ${params.EC2}"
             }
         }
         stage('SCM-Checkout') { // for display purposes
@@ -33,104 +37,34 @@ pipeline {
             }
         }
         stage('Backend-Init') {
-            // Initialize the Terraform configuration
-            steps {
-                dir('backend') {
-                sh script: '../terraform init -input=false'
+            when {
+                expression {
+                    return params.ALL || params.backend
                 }
-            }            
-        }
-        stage('Backend-Plan') {
+            }
             steps {
                 withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
                             string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    dir('backend') {
-                        sh script: '../terraform plan \
+                    if params.operation == 'apply' {
+                       dir('backend') {
+                           sh script: '../terraform init -input=false'
+                           sh script: '../terraform plan \
                                 -out backend.tfplan \
                                 -var="aws_access_key=$aws_access_key" \
                                 -var="aws_secret_key=$aws_secret_key"'
-                    }
-                }
-            }
-            // Create Terraform plan for backend resources
-            
-        }
-        stage('Backend-Apply') {
-            steps {
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
-                                string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    dir('backend') {
-                        sh script: '../terraform apply backend.tfplan'
-                    }
-                }
-
-            }
-        }
-        stage('Config-Init') {
-            steps {
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
-                                string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    dir('remotestate') {
-                        sh script: '../terraform init \
-                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
-                                    -backend-config="key=red30/ecommerceapp/app.state" \
-                                    -backend-config="region=us-east-1" \
-                                    -backend-config="dynamodb_table=red30-tfstatelock" \
-                                    -backend-config="access_key=$aws_access_key" \
-                                    -backend-config="secret_key=$aws_secret_key"'
-                    }
-                }
-
-            }
-        }
-        stage('Config-Plan') {
-            // Generate Terraform plan
-            steps {
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
-                                string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    dir('remotestate') {
-                        sh script: '../terraform plan \
-                                    -out s1.tfplan \
-                                    -var="aws_access_key=$aws_access_key" \
-                                    -var="aws_secret_key=$aws_secret_key"'
-                    }
-                }
-            }
-        }
-        stage('Config-Apply') {
-            // Apply the configuration
-            steps {
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
-                            string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    dir('remotestate') {
-                        sh script: '../terraform apply s1.tfplan'
-                    }
-                }
-            }
-            
-        }
-        stage('Destroy'){
-            steps {
-                input 'Destroy?'
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
-                            string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                    dir('remotestate') {
+                           sh script: '../terraform apply backend.tfplan'
+                       }
+                    } 
+                    if params.operation == 'destroy' {
+                       dir('backend') {
                         sh script: '../terraform destroy \
                                 -auto-approve \
                                 -var="aws_access_key=$aws_access_key" \
                                 -var="aws_secret_key=$aws_secret_key"'
-                    }
-                    dir('backend') {
-                        sh script: '../terraform destroy \
-                                -auto-approve \
-                                -var="aws_access_key=$aws_access_key" \
-                                -var="aws_secret_key=$aws_secret_key"'
-                    }
-                }
-
-            }
-            
+                        }
+                    }        
+                }   
+            }            
         }
-
     }
 }
