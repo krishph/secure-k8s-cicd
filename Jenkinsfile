@@ -1,8 +1,4 @@
-pipeline {
-    agent any
-}
-
-stages {
+node {
     stage('SCM-Checkout') { // for display purposes
         checkout([$class: 'GitSCM',
                 branches: [[name: 'main']],
