@@ -46,22 +46,27 @@ pipeline {
                 withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
                             string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
                     if (params.operation == 'apply') {
-                       dir('backend') {
-                           sh script: '../terraform init -input=false'
-                           sh script: '../terraform plan \
-                                -out backend.tfplan \
-                                -var="aws_access_key=$aws_access_key" \
-                                -var="aws_secret_key=$aws_secret_key"'
-                           sh script: '../terraform apply backend.tfplan'
+                       step {
+                            dir('backend') {
+                                sh script: '../terraform init -input=false'
+                                sh script: '../terraform plan \
+                                        -out backend.tfplan \
+                                        -var="aws_access_key=$aws_access_key" \
+                                        -var="aws_secret_key=$aws_secret_key"'
+                                sh script: '../terraform apply backend.tfplan'
+                           }
                        }
                     } 
                     if (params.operation == 'destroy') {
-                       dir('backend') {
-                        sh script: '../terraform destroy \
-                                -auto-approve \
-                                -var="aws_access_key=$aws_access_key" \
-                                -var="aws_secret_key=$aws_secret_key"'
-                        }
+                       step {
+                            dir('backend') {
+                                sh script: '../terraform destroy \
+                                        -auto-approve \
+                                        -var="aws_access_key=$aws_access_key" \
+                                        -var="aws_secret_key=$aws_secret_key"'
+                            }
+
+                       }
                     }        
                 }   
             }            
