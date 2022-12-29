@@ -55,20 +55,14 @@ pipeline {
                                                 -var="aws_access_key=$aws_access_key" \
                                                 -var="aws_secret_key=$aws_secret_key"'
                                         sh script: '../terraform apply backend.tfplan'
-                                        sh script: 'echo pwd'
-                                        sh script: 'echo ls'
+                                        sh script: 'pwd'
+                                        sh script: 'ls'
                                         sh script: 'aws s3 cp ./terraform.tfstate s3://ikrish-tf-s3-tfstate/base/terraform.tfstate'
                                 }
                         } 
                         if (params.operation == 'destroy') {
                             dir('backend') {
-                                        sh script: '../terraform init \
-                                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
-                                                    -backend-config="key=red30/ecommerceapp/app.state" \
-                                                    -backend-config="region=us-east-1" \
-                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
-                                                    -backend-config="access_key=$aws_access_key" \
-                                                    -backend-config="secret_key=$aws_secret_key"'
+                                        sh script: 'aws s3 cp s3://ikrish-tf-s3-tfstate/base/terraform.tfstate ./terraform.tfstate'
                                         sh script: '../terraform destroy \
                                                 -auto-approve \
                                                 -var="aws_access_key=$aws_access_key" \
