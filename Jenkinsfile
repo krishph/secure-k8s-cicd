@@ -36,7 +36,7 @@ pipeline {
                      && unzip terraform_1.3.6_linux_amd64.zip'
             }
         }
-        stage('Backend-Init') {
+        stage('Backend') {
             when {
                 expression {
                     return params.All || params.Backend
@@ -63,6 +63,45 @@ pipeline {
                                                 -auto-approve \
                                                 -var="aws_access_key=$aws_access_key" \
                                                 -var="aws_secret_key=$aws_secret_key"'
+                                    }
+                        }   
+                    }  
+                } 
+            }            
+        }
+        stage('VPC') {
+            when {
+                expression {
+                    return params.All || params.VPC
+                }
+            }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                            string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                    
+                        if (params.operation == 'apply') {
+                            dir('VPC') {
+                                        sh script: '../terraform init \
+                                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
+                                                    -backend-config="key=red30/ecommerceapp/app.state" \
+                                                    -backend-config="region=us-east-1" \
+                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="access_key=$aws_access_key" \
+                                                    -backend-config="secret_key=$aws_secret_key"'
+                                        ssh script: '../terraform plan \
+                                                    -out vpc.tfplan \
+                                                    -var="aws_access_key=$aws_access_key" \
+                                                    -var="aws_secret_key=$aws_secret_key"'
+                                        sh script: '../terraform apply vpc.tfplan'
+                                }
+                        } 
+                        if (params.operation == 'destroy') {
+                            dir('VPC') {
+                                        sh script: '../terraform destroy \
+                                                    -auto-approve \
+                                                    -var="aws_access_key=$aws_access_key" \
+                                                    -var="aws_secret_key=$aws_secret_key"'
                                     }
                         }   
                     }  
