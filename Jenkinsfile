@@ -18,16 +18,6 @@ pipeline {
                 echo "EC2 button is ${params.EC2}"
             }
         }
-        stage('SCM-Checkout') { // for display purposes
-            steps {
-                checkout([$class: 'GitSCM',
-                    branches: [[name: 'main']],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[$class: 'CleanBeforeCheckout']],
-                    userRemoteConfigs: [[credentialsId: 'GitHubID', url: 'https://github.com/krishph/terraform.git']]
-                ])
-            }
-        }
         stage('Download') {
             // Download Terraform
             steps {
