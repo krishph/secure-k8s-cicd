@@ -17,6 +17,17 @@ variable "region" {
   default = "us-east-1"
 }
 
+#Following pem key should have been pre created. if not create it using following command manually
+#aws ec2 create-key-pair --key-name tf_key --query 'KeyMaterial' --output text > tf_key.pem
+
+variable "ssh_key_name" {
+  default = "tf_key"
+}
+
+variable "private_key_path" {
+  default = "tf_key.pem"
+}
+
 # //////////////////////////////
 # PROVIDERS
 # //////////////////////////////
