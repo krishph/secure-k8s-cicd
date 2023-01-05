@@ -33,7 +33,7 @@ provider "aws" {
 # SECURITY_GROUP
 resource "aws_security_group" "my-sg-grp" {
   name = "ikrish-tf-sg-ec2"
-  vpc_id = var.vpc_id
+  vpc_id = tolist(data.aws_vpcs.vpcs.ids)[0]
 
   ingress {
     from_port = 80
