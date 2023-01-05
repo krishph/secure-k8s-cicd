@@ -60,16 +60,6 @@ pipeline {
                                         sh script: 'aws s3 cp ./terraform.tfstate s3://ikrish-tf-s3-tfstate/base/terraform.tfstate'
                                 }
                         } 
-                        if (params.operation == 'destroy') {
-                            dir('backend') {
-                                        sh script: '../terraform init -input=false'
-                                        sh script: 'aws s3 cp s3://ikrish-tf-s3-tfstate/base/terraform.tfstate ./terraform.tfstate'
-                                        sh script: '../terraform destroy \
-                                                -auto-approve \
-                                                -var="aws_access_key=$aws_access_key" \
-                                                -var="aws_secret_key=$aws_secret_key"'
-                                    }
-                        }   
                     }  
                 } 
             }            
@@ -101,21 +91,6 @@ pipeline {
                                         sh script: '../terraform apply vpc.tfplan'
                                 }
                         } 
-                        if (params.operation == 'destroy') {
-                            dir('VPC') {
-                                        sh script: '../terraform init \
-                                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
-                                                    -backend-config="key=vpc/vpc.state" \
-                                                    -backend-config="region=us-east-1" \
-                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
-                                                    -backend-config="access_key=$aws_access_key" \
-                                                    -backend-config="secret_key=$aws_secret_key"'
-                                        sh script: '../terraform destroy \
-                                                    -auto-approve \
-                                                    -var="aws_access_key=$aws_access_key" \
-                                                    -var="aws_secret_key=$aws_secret_key"'
-                                    }
-                        }   
                     }  
                 } 
             }            
@@ -147,7 +122,22 @@ pipeline {
                                         sh script: '../terraform apply ec2.tfplan'
                                 }
                         } 
-                        if (params.operation == 'destroy') {
+                    }  
+                } 
+            }            
+        }
+        stage('Destroy') {
+            when {
+                expression {
+                    return params.operation == 'destroy'
+                }
+            }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                            string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                    
+                        if (params.EC2 || params.All) {
                             dir('EC2') {
                                         sh script: '../terraform init \
                                                     -backend-config="bucket=ikrish-tf-s3-tfstate" \
@@ -162,6 +152,31 @@ pipeline {
                                                     -var="aws_secret_key=$aws_secret_key"'
                                     }
                         }   
+                        if (params.VPC || params.All) {
+                            dir('VPC') {
+                                        sh script: '../terraform init \
+                                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
+                                                    -backend-config="key=vpc/vpc.state" \
+                                                    -backend-config="region=us-east-1" \
+                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="access_key=$aws_access_key" \
+                                                    -backend-config="secret_key=$aws_secret_key"'
+                                        sh script: '../terraform destroy \
+                                                    -auto-approve \
+                                                    -var="aws_access_key=$aws_access_key" \
+                                                    -var="aws_secret_key=$aws_secret_key"'
+                                    }
+                        }   
+                        if (params.All) {
+                            dir('backend') {
+                                        sh script: '../terraform init -input=false'
+                                        sh script: 'aws s3 cp s3://ikrish-tf-s3-tfstate/base/terraform.tfstate ./terraform.tfstate'
+                                        sh script: '../terraform destroy \
+                                                -auto-approve \
+                                                -var="aws_access_key=$aws_access_key" \
+                                                -var="aws_secret_key=$aws_secret_key"'
+                                    }
+                        }    
                     }  
                 } 
             }            
