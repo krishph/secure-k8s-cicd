@@ -69,7 +69,7 @@ resource "aws_s3_bucket_public_access_block" "ikrish-tf-s3-tfstate" {
 # DYNAMODB TABLE
 # //////////////////////////////
 resource "aws_dynamodb_table" "tf_db_statelock" {
-  name           = "red30-tfstatelock"
+  name           = "ikrish-tf-tfstatelock"
   read_capacity  = 20
   write_capacity = 20
   hash_key       = "LockID"

@@ -81,7 +81,7 @@ pipeline {
                                                     -backend-config="bucket=ikrish-tf-s3-tfstate" \
                                                     -backend-config="key=vpc/vpc.state" \
                                                     -backend-config="region=us-east-1" \
-                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="dynamodb_table=ikrish-tf-tfstatelock" \
                                                     -backend-config="access_key=$aws_access_key" \
                                                     -backend-config="secret_key=$aws_secret_key"'
                                         sh script: '../terraform plan \
@@ -112,7 +112,7 @@ pipeline {
                                                     -backend-config="bucket=ikrish-tf-s3-tfstate" \
                                                     -backend-config="key=ec2/ec2.state" \
                                                     -backend-config="region=us-east-1" \
-                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="dynamodb_table=ikrish-tf-tfstatelock" \
                                                     -backend-config="access_key=$aws_access_key" \
                                                     -backend-config="secret_key=$aws_secret_key"'
                                         sh script: '../terraform plan \
@@ -143,7 +143,7 @@ pipeline {
                                                     -backend-config="bucket=ikrish-tf-s3-tfstate" \
                                                     -backend-config="key=ec2/ec2.state" \
                                                     -backend-config="region=us-east-1" \
-                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="dynamodb_table=ikrish-tf-tfstatelock" \
                                                     -backend-config="access_key=$aws_access_key" \
                                                     -backend-config="secret_key=$aws_secret_key"'
                                         sh script: '../terraform destroy \
@@ -158,7 +158,7 @@ pipeline {
                                                     -backend-config="bucket=ikrish-tf-s3-tfstate" \
                                                     -backend-config="key=vpc/vpc.state" \
                                                     -backend-config="region=us-east-1" \
-                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="dynamodb_table=ikrish-tf-tfstatelock" \
                                                     -backend-config="access_key=$aws_access_key" \
                                                     -backend-config="secret_key=$aws_secret_key"'
                                         sh script: '../terraform destroy \
