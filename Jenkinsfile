@@ -120,5 +120,51 @@ pipeline {
                 } 
             }            
         }
+        stage('EC2') {
+            when {
+                expression {
+                    return params.All || params.EC2
+                }
+            }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                            string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                    
+                        if (params.operation == 'apply') {
+                            dir('EC2') {
+                                        sh script: '../terraform init \
+                                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
+                                                    -backend-config="key=red30/ecommerceapp/app.state" \
+                                                    -backend-config="region=us-east-1" \
+                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="access_key=$aws_access_key" \
+                                                    -backend-config="secret_key=$aws_secret_key"'
+                                        sh script: '../terraform plan \
+                                                    -out ec2.tfplan \
+                                                    -var="aws_access_key=$aws_access_key" \
+                                                    -var="aws_secret_key=$aws_secret_key"'
+                                        sh script: '../terraform apply ec2.tfplan'
+                                }
+                        } 
+                        if (params.operation == 'destroy') {
+                            dir('EC2') {
+                                        sh script: '../terraform init \
+                                                    -backend-config="bucket=ikrish-tf-s3-tfstate" \
+                                                    -backend-config="key=red30/ecommerceapp/app.state" \
+                                                    -backend-config="region=us-east-1" \
+                                                    -backend-config="dynamodb_table=red30-tfstatelock" \
+                                                    -backend-config="access_key=$aws_access_key" \
+                                                    -backend-config="secret_key=$aws_secret_key"'
+                                        sh script: '../terraform destroy \
+                                                    -auto-approve \
+                                                    -var="aws_access_key=$aws_access_key" \
+                                                    -var="aws_secret_key=$aws_secret_key"'
+                                    }
+                        }   
+                    }  
+                } 
+            }            
+        }
     }
 }
