@@ -41,7 +41,7 @@ provider "aws" {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "vpc-module-example"
+  name = "ikrish-tf-vpc"
 
   cidr = "10.0.0.0/16"
 
