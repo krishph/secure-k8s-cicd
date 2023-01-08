@@ -31,9 +31,12 @@ pipeline {
         stage('Download') {
             // Download Terraform
             steps {
-                 sh label: '', script: 'curl https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_linux_amd64.zip \
-                     --output terraform_1.3.6_linux_amd64.zip \
-                     && unzip terraform_1.3.6_linux_amd64.zip'
+                //  sh label: '', script: 'curl https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_linux_amd64.zip \
+                //  --output terraform_1.3.6_linux_amd64.zip \
+                //  && unzip terraform_1.3.6_linux_amd64.zip'
+                    sh label: '', script: 'curl https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_darwin_amd64.zip \
+                     --output terraform_1.3.6_darwin_amd64.zip \
+                     && unzip terraform_1.3.6_darwin_amd64.zip'
             }
         }
         stage('Backend') {
