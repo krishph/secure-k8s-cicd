@@ -1,0 +1,16 @@
+.DS_Store
+__pycache__/
+__MACOSX/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+build/
+.coverage
+.pytest_cache/
+*.pem
+*.key
+*kubeconfig*
+# The paper is a local reference; publishing rights are separate from code.
+*.pdf
