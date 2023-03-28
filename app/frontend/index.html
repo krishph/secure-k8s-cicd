@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecureCICD · Voting demo</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">SecureCICD / sample workload</p>
+    <h1>A small vote.<br>A secure delivery pipeline.</h1>
+    <p class="intro">Cats or dogs? Choose your favorite to try the three-service Kubernetes demo.</p>
+    <div class="choices">
+      <button data-choice="cats"><span>Cats</span><strong id="cats">—</strong><small>Vote for cats</small></button>
+      <button data-choice="dogs"><span>Dogs</span><strong id="dogs">—</strong><small>Vote for dogs</small></button>
+    </div>
+    <p id="status" role="status" aria-live="polite">Loading results…</p>
+    <footer>Frontend → Python API → Redis<br>Educational demo. Repeat voting is allowed; totals are temporary.</footer>
+  </main>
+</body>
+</html>
