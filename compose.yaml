@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build: ./app/frontend
+    image: docker.io/securecicd/frontend:dev
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    read_only: true
+    tmpfs: ["/tmp:uid=101,gid=101,mode=1770"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  backend:
+    build: ./app/backend
+    image: docker.io/securecicd/backend:dev
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/readyz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    read_only: true
+    tmpfs: ["/tmp:uid=10001,gid=10001,mode=1770"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  redis:
+    image: docker.io/library/redis:7.4-alpine
+    user: "999:999"
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    read_only: true
+    tmpfs: ["/data:uid=999,gid=999,mode=1770"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
