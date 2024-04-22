@@ -1,0 +1,94 @@
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "redis"
+  namespace: "securecicd"
+  labels:
+    app: "redis"
+    app.kubernetes.io/part-of: "securecicd"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "redis"
+  template:
+    metadata:
+      labels:
+        app: "redis"
+        app.kubernetes.io/part-of: "securecicd"
+    spec:
+      serviceAccountName: "voting-app"
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: "RuntimeDefault"
+      containers:
+        -
+          name: "redis"
+          image: "docker.io/library/redis:7.4-alpine"
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            -
+              containerPort: 6379
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - "ALL"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "128Mi"
+          volumeMounts:
+            -
+              name: "writable"
+              mountPath: "/data"
+          command:
+            - "redis-server"
+            - "--save"
+            - ""
+            - "--appendonly"
+            - "no"
+          readinessProbe:
+            exec:
+              command:
+                - "redis-cli"
+                - "ping"
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - "redis-cli"
+                - "ping"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        -
+          name: "writable"
+          emptyDir:
+            sizeLimit: "64Mi"
+  strategy:
+    type: "Recreate"
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "redis"
+  namespace: "securecicd"
+spec:
+  type: "ClusterIP"
+  selector:
+    app: "redis"
+  ports:
+    -
+      port: 6379
+      targetPort: 6379
