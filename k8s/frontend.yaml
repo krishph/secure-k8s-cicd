@@ -1,0 +1,85 @@
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "frontend"
+  namespace: "securecicd"
+  labels:
+    app: "frontend"
+    app.kubernetes.io/part-of: "securecicd"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "frontend"
+  template:
+    metadata:
+      labels:
+        app: "frontend"
+        app.kubernetes.io/part-of: "securecicd"
+    spec:
+      serviceAccountName: "voting-app"
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: "RuntimeDefault"
+      containers:
+        -
+          name: "frontend"
+          image: "docker.io/securecicd/frontend:dev"
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            -
+              containerPort: 8080
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - "ALL"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "250m"
+              memory: "64Mi"
+          volumeMounts:
+            -
+              name: "writable"
+              mountPath: "/tmp"
+          readinessProbe:
+            httpGet:
+              path: "/healthz"
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: "/healthz"
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        -
+          name: "writable"
+          emptyDir:
+            sizeLimit: "64Mi"
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "frontend"
+  namespace: "securecicd"
+spec:
+  type: "ClusterIP"
+  selector:
+    app: "frontend"
+  ports:
+    -
+      port: 8080
+      targetPort: 8080
