@@ -1,0 +1,33 @@
+# Local image names; build with docker compose build and load into your local cluster.
+# Use fully qualified images (including tags/digests) when overriding these values.
+serviceAccount:
+  annotations: {}
+networkPolicy:
+  enabled: true
+components:
+  frontend:
+    image: docker.io/securecicd/frontend:dev
+    port: 8080
+    uid: 101
+    replicas: 1
+    probe: /healthz
+    resources:
+      requests: {cpu: 50m, memory: 32Mi}
+      limits: {cpu: 250m, memory: 64Mi}
+  backend:
+    image: docker.io/securecicd/backend:dev
+    port: 8000
+    uid: 10001
+    replicas: 1
+    probe: /readyz
+    resources:
+      requests: {cpu: 100m, memory: 64Mi}
+      limits: {cpu: 500m, memory: 128Mi}
+  redis:
+    image: docker.io/library/redis:7.4-alpine
+    port: 6379
+    uid: 999
+    replicas: 1
+    resources:
+      requests: {cpu: 100m, memory: 64Mi}
+      limits: {cpu: 500m, memory: 128Mi}
