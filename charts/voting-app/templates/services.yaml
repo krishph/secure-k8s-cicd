@@ -1,0 +1,17 @@
+{{- range $name, $component := .Values.components }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    app.kubernetes.io/part-of: securecicd
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $name }}
+  ports:
+    - name: http-or-db
+      port: {{ $component.port }}
+      targetPort: {{ $component.port }}
+{{- end }}
