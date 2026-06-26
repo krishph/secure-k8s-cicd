@@ -1,0 +1,46 @@
+[
+  {
+    "file": "tests/fixtures/good/deployment.yaml",
+    "expected": null
+  },
+  {
+    "file": "tests/fixtures/bad/latest.yaml",
+    "expected": "SC001"
+  },
+  {
+    "file": "tests/fixtures/bad/implicit-latest.yaml",
+    "expected": "SC001"
+  },
+  {
+    "file": "tests/fixtures/bad/unapproved-registry.yaml",
+    "expected": "SC002"
+  },
+  {
+    "file": "tests/fixtures/bad/missing-requests-cpu.yaml",
+    "expected": "missing resources.requests.cpu"
+  },
+  {
+    "file": "tests/fixtures/bad/missing-requests-memory.yaml",
+    "expected": "missing resources.requests.memory"
+  },
+  {
+    "file": "tests/fixtures/bad/missing-limits-cpu.yaml",
+    "expected": "missing resources.limits.cpu"
+  },
+  {
+    "file": "tests/fixtures/bad/missing-limits-memory.yaml",
+    "expected": "missing resources.limits.memory"
+  },
+  {
+    "file": "tests/fixtures/bad/privileged.yaml",
+    "expected": "SC004"
+  },
+  {
+    "file": "tests/fixtures/bad/privilege-escalation.yaml",
+    "expected": "SC005"
+  },
+  {
+    "file": "tests/fixtures/bad/root-user.yaml",
+    "expected": "SC006"
+  }
+]
