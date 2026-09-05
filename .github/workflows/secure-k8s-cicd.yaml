@@ -1,0 +1,81 @@
+name: Secure Kubernetes CI
+
+on:
+  pull_request:
+    branches: [main, develop, staging]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: secure-cicd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  policies:
+    name: Policies and Helm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Verify Rego, fixtures, raw manifests, and rendered Helm
+        run: bash scripts/check.sh
+
+  app:
+    name: Application tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Test backend inside its Python base image
+        run: |
+          docker run --rm -v "$PWD/app/backend:/app:ro" -w /app python:3.13-slim \
+            sh -ec 'pip install --no-cache-dir -r requirements.txt; PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -v'
+
+  images:
+    name: Build and scan images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Build both application containers
+        run: docker compose build
+      - name: Scan frontend, backend, and Redis
+        run: bash scripts/scan.sh docker.io/securecicd/frontend:dev docker.io/securecicd/backend:dev docker.io/library/redis:7.4-alpine
+
+  gate:
+    name: Security gate
+    if: ${{ always() }}
+    needs: [policies, app, images]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every check to succeed
+        env:
+          POLICY_RESULT: ${{ needs.policies.result }}
+          APP_RESULT: ${{ needs.app.result }}
+          IMAGE_RESULT: ${{ needs.images.result }}
+        run: |
+          {
+            echo '## SecureCICD results'
+            echo "Policies and Helm: $POLICY_RESULT"
+            echo "Application tests: $APP_RESULT"
+            echo "Image scanning: $IMAGE_RESULT"
+            echo 'See the individual job logs for policy IDs and vulnerability details.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$POLICY_RESULT" = success
+          test "$APP_RESULT" = success
+          test "$IMAGE_RESULT" = success
